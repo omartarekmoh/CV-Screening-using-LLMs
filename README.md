@@ -29,7 +29,7 @@ $ pip install -r requirements.txt
 To run the application, use the following command:
 
 ```bash
-$ uvicorn main:app --reload --host 0.0.0.0 --port 8000
+$ uvicorn main:app --reload --host 0.0.0.0 --port 5000
 ```
 
 - **`--reload`**: Enables auto-reloading of the server when you make changes to the code (useful for development).
