@@ -8,10 +8,10 @@ This is a minimal implementation of the RAG model for question answering
 
 ### Install Python using MiniConda
 
-1) Download and install MiniConda from [Here](#).
+1) Download and install MiniConda from [Here](https://www.anaconda.com/docs/getting-started/miniconda/install).
 2) Create a new environment using the following command:
 ```bash
-$ conda create -n mini-rag-app python=3.8
+$ conda create -n mini-rag-app python=3.9
 ```
 3) Activate the environment:
 ```bash
@@ -23,6 +23,21 @@ To install the required dependencies, use the following command:
 
 ```bash
 $ pip install -r requirements.txt
+```
+
+## Docker installation
+To set up the application with Docker Compose, follow these steps:
+1) Navigate to the Docker Folder:
+```bash
+$ cd docker
+```
+2) Build and Start the Docker Containers:
+```bash
+$ docker-compose up --build
+```
+3) To Stop the Docker Containers:
+```bash
+$ docker-compose down
 ```
 
 ## Run the server
@@ -42,6 +57,6 @@ $ uvicorn main:app --reload --host 0.0.0.0 --port 5000
 Once the server is running, you can access the application by opening your browser and navigating to:
 
 ```cpp
-http://<your-ip>:8000
+http://127.0.0.1:5000  # for local development
 ```
-If you are running the server locally, use `http://127.0.0.1:8000`.
+If you are running the server in a Docker container, replace 127.0.0.1 with your machine’s IP address (or use localhost).
