@@ -3,11 +3,10 @@ from routes import base, data
 from contextlib import asynccontextmanager
 from helpers.database import db
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await db.connect()
-    app.state.db = db.db
+    await db.init_db()
+    app.db = db.db
     yield
     await db.disconnect()
     

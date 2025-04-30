@@ -1,11 +1,12 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Any
+from typing import Optional
 from bson import ObjectId
+from models.enums import DataBaseEnum
 
 class Project(BaseModel):
-    _id: Optional[Any] = None
+    id: Optional[ObjectId] = Field(default_factory=ObjectId, alias="_id")
     project_id: str = Field(..., min_length=1)
-        
+
     @field_validator('project_id')
     @classmethod
     def project_id_must_be_alphanumeric(cls, v):
@@ -13,15 +14,21 @@ class Project(BaseModel):
             raise ValueError('Project id must be alphanumeric')
         return v
 
-    @field_validator('_id')
     @classmethod
-    def validate_object_id(cls, v):
-        if v is not None and not isinstance(v, ObjectId):
-            raise ValueError('_id must be a valid ObjectId')
-        return v
+    def get_indexes(cls):
+        # Define collection name directly in the model
+        collection_name = DataBaseEnum.COLLECTION_PROJECT_NAME.value
+        indexes = [
+            {
+                "key": [
+                    ("project_id", 1)
+                ],
+                "name": "project_id_index_1",
+                "unique": True
+            }
+        ]
+        return collection_name, indexes
+        
 
-    model_config = {
-        "json_encoders": {
-            ObjectId: str
-        }
-    }
+    class Config:
+        arbitrary_types_allowed = True
