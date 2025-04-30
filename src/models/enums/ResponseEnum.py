@@ -11,3 +11,4 @@ class ResponseSignal(Enum):
     
     PROCESSING_FAILED = "processing_failed"
     PROCESSING_SUCCESS = "processing_success"
+    ASSET_NOT_FOUND = "asset_not_found"

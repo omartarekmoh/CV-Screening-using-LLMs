@@ -24,6 +24,9 @@ class ProcessController(BaseController):
             file_id
         )
         
+        if not os.path.exists(file_path):
+            return None
+        
         if file_ext == ProcessingEnum.TXT.value:
             return TextLoader(file_path=file_path, encoding="utf-8")
         
@@ -34,6 +37,8 @@ class ProcessController(BaseController):
     
     def get_file_content(self, file_id: str):
         loader = self.get_file_loader(file_id=file_id)
+        if loader is None:
+            return None
         return loader.load() if loader else None
     
     def process_file_content(self, file_content: list, file_id: str,
@@ -62,5 +67,7 @@ class ProcessController(BaseController):
         
         for idx, chunk in enumerate(chunks, start=1):
             chunk.id = idx
+            chunk.metadata["chunk_asset_id"] = file_id
+            
 
         return chunks

@@ -1,21 +1,18 @@
-from fastapi import FastAPI, APIRouter, Depends, UploadFile, status
+from fastapi import APIRouter, Depends, UploadFile, status
 from fastapi.responses import JSONResponse
 import os
 from helpers.config import get_settings, Settings
-from controllers import DataController, ProjectController, ProcessController
+from controllers import DataController, ProcessController
 import aiofiles
 from models import ResponseSignal
 import logging
 from .schemes.data import ProcessRequest
 from models.ProjecModel import ProjectModel
 from helpers import get_db, Database
-from models.db_schemes import DataChunk, Asset
+from models.db_schemes import Asset
 from models.ChunkModel import ChunkModel
 from models.AssetModel import AssetModel
-from bson import ObjectId
 from models.enums import AssetTypeEnum
-
-
 
 
 logger = logging.getLogger("uvicorn.errors")
@@ -90,80 +87,62 @@ async def upload_data(
             "file_id": str(asset_record.id),
         }
     )
-    
-    
+
+from services.processing_service import _get_project_file_ids, _process_files, _prepare_chunk_records
+
 @data_router.post("/process/{project_id}")
 async def process_endpoint(
     project_id: str, 
     process_request: ProcessRequest,
     db_client: Database = Depends(get_db)
 ):
-    
-    # file_id = process_request.file_id
+    # Extract the necessary fields from process_request
     chunk_size = process_request.chunk_size
     overlap_size = process_request.overlap_size
     do_reset = process_request.do_reset
-    
-    
-    project_model = ProjectModel(
-        db_client=db_client
-    )
+    file_id = process_request.file_id
 
-    project = await project_model.get_project_or_create_one(
-        project_id=project_id
-    )  
-    
+    # Initialize ProjectModel and fetch or create the project
+    project_model = ProjectModel(db_client=db_client)
+    project = await project_model.get_project_or_create_one(project_id=project_id)
+
+    # Initialize AssetModel and prepare file assets
     asset_model = AssetModel(db_client=db_client)
+    project_file_ids = await _get_project_file_ids(asset_model, project.id, file_id)
     
-    assets_for_project = await asset_model.get_all_assets_by_project_id(asset_project_id=project.id)
-     
-    process_controller = ProcessController(project_id=project_id)
-    
-    all_file_chunks = [] 
-    
-    for asset in assets_for_project:
-        file_content = process_controller.get_file_content(file_id=asset.asset_name)
-        file_chunks = process_controller.process_file_content(
-            file_content=file_content,
-            file_id= asset.asset_name,
-            chunk_size=chunk_size,
-            overlap_size=overlap_size
-        )
-        
-        if file_chunks:
-                all_file_chunks.extend(file_chunks)
-        
-    
-    if not all_file_chunks or len(all_file_chunks) == 0:
+    # Handle case when no files are found
+    if not project_file_ids:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "signal": ResponseSignal.PROCESSING_FAILED.value
-            }
+            content={"signal": ResponseSignal.ASSET_NOT_FOUND.value},
         )
-        
-    file_chunks_records = [
-        DataChunk(
-            chunk_text= chunk.page_content,
-            chunk_metadata= chunk.metadata,
-            chunk_project_id=ObjectId(project.id),
-            chunk_order=chunk.id
+
+    # Initialize ProcessController and process each file
+    process_controller = ProcessController(project_id=project_id)
+    all_file_chunks = await _process_files(process_controller, project_file_ids, chunk_size, overlap_size)
+
+    # Handle case when processing failed
+    if not all_file_chunks:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"signal": ResponseSignal.PROCESSING_FAILED.value},
         )
-        for chunk in all_file_chunks
-    ]
-    
+
+    # Prepare and insert chunk records
+    file_chunks_records = _prepare_chunk_records(all_file_chunks, project.id)
     chunk_model = ChunkModel(db_client=db_client)
-    
-    if do_reset == 1:
-        _ = await chunk_model.delete_chunks_by_project_id(
-            project_id=project.id
-        )
-    
+
+    # Reset chunks if required
+    if do_reset:
+        await chunk_model.delete_chunks_by_project_id(project_id=project.id)
+
+    # Insert new chunks
     no_of_records = await chunk_model.insert_many_chunks(chunks=file_chunks_records)
-    
+
     return JSONResponse(
         content={
             "signal": ResponseSignal.PROCESSING_SUCCESS.value,
             "inserted_chunks": no_of_records,
+            "processed_files": len(project_file_ids)
         }
-    ) 
+    )

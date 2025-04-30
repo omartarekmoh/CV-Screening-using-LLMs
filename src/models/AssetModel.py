@@ -15,12 +15,32 @@ class AssetModel(BaseDataModel):
         asset.id = result.inserted_id
         return asset
     
-    async def get_all_assets_by_project_id(self, asset_project_id: str):
-        result = await self.collection.find({
+    async def get_all_assets_by_project_id(self, asset_project_id: str, asset_type: str = None):
+        query = {
             "asset_project_id": ObjectId(asset_project_id) if isinstance(asset_project_id, str) else asset_project_id
-        }).to_list(length=None)
+        }
         
-        if result is None:
+        if asset_type is not None:
+            query["asset_type"] = asset_type
+
+        result = await self.collection.find(query).to_list(length=None)
+        
+        if not result:
+            return None
+
+        return [Asset(**asset) for asset in result]
+    
+    async def get_asset_by_project_id_and_name(self, asset_project_id: str, asset_name: str):
+        query = {
+            "asset_project_id": ObjectId(asset_project_id) if isinstance(asset_project_id, str) else asset_project_id,
+            "asset_name": asset_name
+        }
+
+        result = await self.collection.find_one(query)
+        
+        if not result:
             return None
         
-        return [Asset(**asset) for asset in result]
+        return Asset(**result)
+    
+

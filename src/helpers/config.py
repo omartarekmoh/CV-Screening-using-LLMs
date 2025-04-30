@@ -1,4 +1,10 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pathlib import Path
+from functools import lru_cache
+
+# Get the absolute path to the src directory where .env is located
+SRC_DIR = Path(__file__).parent.parent
+ENV_FILE = SRC_DIR / ".env"
 
 class Settings(BaseSettings):
     
@@ -17,9 +23,12 @@ class Settings(BaseSettings):
     MONGODB_URL: str
     MONGODB_DATABASE: str
     
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file=ENV_FILE,
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
         
-
+@lru_cache()
 def get_settings():
     return Settings()
