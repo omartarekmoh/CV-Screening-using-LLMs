@@ -20,7 +20,6 @@ class GenerateRequest(BaseModel):
 @text_router.post("/generate")
 async def upload_data(
     request: GenerateRequest,
-    app_settings: Settings = Depends(get_settings),
     llm_clients: tuple = Depends(get_llm_clients),
 ):
     generation_client, embedding_client = llm_clients

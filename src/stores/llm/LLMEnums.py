@@ -4,8 +4,7 @@ class LLMEnums(Enum):
     OPENAI = "OPENAI"
     GROQ = "GROQ"
     JINAAI = "JINAAI"
-    
-    
+     
 class OpenAIEnums(Enum):
     SYSTEM = "system"
     USER = "user"
