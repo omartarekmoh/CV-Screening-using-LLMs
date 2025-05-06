@@ -1,7 +1,5 @@
-ENV_NAME=mini-rag-app
-
 run:
-	./run.sh
+	./shells/run.sh
 
 test:
 	pytest
@@ -13,4 +11,4 @@ format:
 	black src/
 
 install:
-	pip install -r src/requirements.txt
+	./shells/install.sh
