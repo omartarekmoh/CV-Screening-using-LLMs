@@ -23,6 +23,21 @@ class Settings(BaseSettings):
     MONGODB_URL: str
     MONGODB_DATABASE: str
     
+    GENERATION_BACKEND:str = None
+    EMBEDDING_BACKEND:str = None
+    
+    GROQ_API_KEY:str = None
+    JINAAI_API_KEY:str = None
+    JINAAI_API_URL:str = None
+
+    GENERATION_MODEL_ID:str = None
+    EMBEDDING_MODEL_ID:str = None
+    EMBEDDING_MODEL_SIZE:int = None
+
+    INPUT_DEFAULT_MAX_CHARACTERS:int = None
+    GENERATION_DEFAULT_MAX_TOKENS:int = None
+    GENERATION_DEFAULT_TEMPERATURE:float = None
+    
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
         env_file_encoding="utf-8",
