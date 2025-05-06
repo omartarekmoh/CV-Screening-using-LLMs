@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
 from functools import lru_cache
@@ -10,11 +11,7 @@ class Settings(BaseSettings):
     
     APP_NAME: str
     APP_VERSION: str
-    GROQ_API_KEY: str
     
-    
-    GROQ_API_KEY: str
-
     FILE_ALLOWED_TYPES: list
     FILE_MAX_SIZE: int
     
@@ -23,20 +20,22 @@ class Settings(BaseSettings):
     MONGODB_URL: str
     MONGODB_DATABASE: str
     
-    GENERATION_BACKEND:str = None
-    EMBEDDING_BACKEND:str = None
+    GENERATION_BACKEND: Optional[str] = None
+    EMBEDDING_BACKEND: Optional[str] = None
     
-    GROQ_API_KEY:str = None
-    JINAAI_API_KEY:str = None
-    JINAAI_API_URL:str = None
+    GROQ_API_KEY: Optional[str] = None
+    
+    JINAAI_API_KEY: Optional[str] = None
+    JINAAI_API_URL: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+    
+    GENERATION_MODEL_ID: Optional[str] = None
+    EMBEDDING_MODEL_ID: Optional[str] = None
+    EMBEDDING_MODEL_SIZE: Optional[int] = None
 
-    GENERATION_MODEL_ID:str = None
-    EMBEDDING_MODEL_ID:str = None
-    EMBEDDING_MODEL_SIZE:int = None
-
-    INPUT_DEFAULT_MAX_CHARACTERS:int = None
-    GENERATION_DEFAULT_MAX_TOKENS:int = None
-    GENERATION_DEFAULT_TEMPERATURE:float = None
+    INPUT_DEFAULT_MAX_CHARACTERS: Optional[int] = None
+    GENERATION_DEFAULT_MAX_TOKENS: Optional[int] = None
+    GENERATION_DEFAULT_TEMPERATURE: Optional[float] = None
     
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

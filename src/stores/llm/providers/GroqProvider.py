@@ -18,7 +18,6 @@ class GroqProvider(TextGenerationInterface):
         self.default_generation_temperature = default_generation_temperature
         
         self.generation_model_id = None
-    
         self.client = Groq(
             api_key=self.api_key,
         )
@@ -58,7 +57,7 @@ class GroqProvider(TextGenerationInterface):
             self.logger.error("Error while generating text with Groq")
             return None
         
-        return response.choices[0].message["content"]
+        return response.choices[0].message.content
     
     def construct_prompt(self, prompt: str, role: str):        
         return {

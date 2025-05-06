@@ -1,7 +1,9 @@
 from helpers.config import get_settings
 from stores.llm.LLMProviderFactory import LLMProviderFactory
+from functools import lru_cache
+from fastapi import Request
 
-def get_llm_clients():
+def initialize_llm_clients():
     settings = get_settings()
     llm_provider_factory = LLMProviderFactory(settings)
     generation_client = llm_provider_factory.create(provider=settings.GENERATION_BACKEND)
@@ -9,3 +11,8 @@ def get_llm_clients():
     embedding_client = llm_provider_factory.create(provider=settings.EMBEDDING_BACKEND)
     embedding_client.set_embedding_model(model_id=settings.EMBEDDING_MODEL_ID, embedding_size=settings.EMBEDDING_MODEL_SIZE)
     return generation_client, embedding_client
+
+@lru_cache()
+def get_llm_clients(request: Request):
+    # Return the database connection stored in app.state
+    return request.app.generation_client, request.app.embedding_client

@@ -5,6 +5,7 @@ from pymongo.errors import DuplicateKeyError
 import inspect
 import logging
 from pydantic import BaseModel as PydanticBaseModel
+from functools import lru_cache
 
 # Logger setup
 logger = logging.getLogger(__name__)
@@ -64,6 +65,7 @@ class Database:
 # Initialize the singleton
 db = Database()
 
+@lru_cache()
 def get_db(request: Request):
     # Return the database connection stored in app.state
     return request.app.db

@@ -27,7 +27,7 @@ class JinaAIProvider(EmbeddingInterface):
         return text[:self.default_input_max_characters].strip()
     
     def embed_text(self, text: str, document_type: str = None):
-        if not self.embedding_api_url:
+        if not self.api_url:
             self.logger.error("Embedding API URL isn't set")
             return None
         
@@ -43,7 +43,7 @@ class JinaAIProvider(EmbeddingInterface):
         
         data = response.json()
         
-        if not data or not data["data"] or data["data"][0]["embedding"]:
+        if not data or not data["data"] or not data["data"][0]["embedding"]:
             self.logger.error("No embedding found in the response")
             return None
         
@@ -59,7 +59,7 @@ class JinaAIProvider(EmbeddingInterface):
             headers=headers,
             json={
                 "model": self.embedding_model_id,
-                "input": [self.process_text(text)]
+                "input": self.process_text(text)
             }
         )
         
